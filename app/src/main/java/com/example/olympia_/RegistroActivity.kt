@@ -1,20 +1,74 @@
 package com.example.olympia_
 
 import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.olympia_.DatabaseHelper.DatabaseHelper
 
 class RegistroActivity : AppCompatActivity() {
+
+    //Aqui se declaran los elementos
+    private lateinit var etNombre : EditText
+    private lateinit var etCorreo: EditText
+    private lateinit var etPassword: EditText
+    private lateinit var btnRegistrar: Button
+
+    //Crear instancia del DatabaseHelper
+    private lateinit var dbHelper: DatabaseHelper
+
+    //Metodo principal
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_registro)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+        //Inicializar los objetos de los componentes
+        etNombre = findViewById(R.id.etNombre)
+        etCorreo = findViewById(R.id.etCorreo)
+        etPassword = findViewById(R.id.etPass)
+        btnRegistrar = findViewById(R.id.btnRegistrar)
+
+        //Iniciar la base de datos en un objeto
+        dbHelper = DatabaseHelper(this)
+
+        //Evento para registrar al usuaio
+        btnRegistrar.setOnClickListener {
+            //Registrar al usuario
+            registrarUsuario()
         }
     }
+
+    //Metodos por aqui
+    private fun registrarUsuario(){
+        //Variables para guardar los textos
+        val nombre= etNombre.text.toString().trim()
+        val correo= etCorreo.text.toString().trim()
+        val password= etPassword.text.toString().trim()
+
+        if (nombre.isEmpty() || correo.isEmpty() || password.isEmpty()){
+            Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        //Variable que guarda el resultado del registro y llama a la DB
+        val registro = dbHelper.registrarUsuario(nombre, correo, password)
+
+        //Validar que el resultado de la inserción sea verdadero o falso
+        if (registro){
+            //Si el registro es correcto
+            Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
+            //Cierra la pantalla actual y regresa a la pantalla anterior
+            //Prueba de git
+            finish()
+        }else{
+            Toast.makeText(this, "Error al registrar", Toast.LENGTH_SHORT).show()
+        }
+
+    }
+
 }

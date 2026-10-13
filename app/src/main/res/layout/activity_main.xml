@@ -64,7 +64,7 @@
                 android:textColor="#333333"
                 android:textColorHint="#0E9911"
                 android:inputType="textEmailAddress"
-                android:drawableStart="@drawable/email"
+                android:drawableStart="@drawable/correo"
                 android:drawablePadding="10dp"/>
 
             <EditText

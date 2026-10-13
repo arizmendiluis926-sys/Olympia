@@ -1,3 +1,4 @@
+
 package com.example.olympia_.DatabaseHelper
 
 import android.content.ContentValues
@@ -12,8 +13,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
     null,
     DATABASE_VERSION
 ) {
+
     //Datos de la base de datos
-    companion object{
+    companion object {
 
         //Informacion de la BD
         private const val DATABASE_NAME = "musica.db"
@@ -30,15 +32,16 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
 
     //METODO ONCREATE - Para crear la base de datos
     override fun onCreate(db: SQLiteDatabase?) {
-        //Crear table
+
+        //Crear tabla
         val crearTablaUsuarios = """
-            CREATE TABLE $TABLE_USUARIOS(
-            $COL_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            $COL_NOMBRE TEXT NOT NULL,
-            $COL_CORREO TEXT NOT NULL,
-            $COL_PASSWORD TEXT NOT NULL
+            CREATE TABLE $TABLE_USUARIOS (
+                $COL_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                $COL_NOMBRE TEXT NOT NULL,
+                $COL_CORREO TEXT NOT NULL,
+                $COL_PASSWORD TEXT NOT NULL
             )
-        """".trimIndent()
+        """.trimIndent()
 
         //Crear tabla de usuarios
         db?.execSQL(crearTablaUsuarios)
@@ -46,13 +49,17 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
     }
 
     //METODO ONUPGRADE
-    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+    override fun onUpgrade(
+        db: SQLiteDatabase?,
+        oldVersion: Int,
+        newVersion: Int
+    ) {
         db?.execSQL("DROP TABLE IF EXISTS $TABLE_USUARIOS")
         onCreate(db)
     }
 
     //Metodo para registrar un usuario
-    fun registrarUsuario(nombre : String, correo : String, password : String) : Boolean {
+    fun registrarUsuario(nombre: String, correo: String, password: String): Boolean {
 
         //Crear variable para escribir en la BD
         val db = writableDatabase
@@ -70,11 +77,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
         //Cerrar conexion de la BD
         db.close()
 
-        //Regresar el balor obtenido de la inserccion (Verdadero o falso)
+        //Regresar el valor obtenido de la insercion (Verdadero o falso)
         return resultado != -1L
-
 
     }
 
 }
-

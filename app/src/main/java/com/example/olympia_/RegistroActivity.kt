@@ -6,14 +6,12 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.olympia_.DatabaseHelper.DatabaseHelper
 
 class RegistroActivity : AppCompatActivity() {
 
     //Aqui se declaran los elementos
-    private lateinit var etNombre : EditText
+    private lateinit var etNombre: EditText
     private lateinit var etCorreo: EditText
     private lateinit var etPassword: EditText
     private lateinit var btnRegistrar: Button
@@ -36,36 +34,53 @@ class RegistroActivity : AppCompatActivity() {
         //Iniciar la base de datos en un objeto
         dbHelper = DatabaseHelper(this)
 
-        //Evento para registrar al usuaio
+        //Evento para registrar al usuario
         btnRegistrar.setOnClickListener {
+
             //Registrar al usuario
             registrarUsuario()
+
         }
+
     }
 
     //Metodos por aqui
-    private fun registrarUsuario(){
-        //Variables para guardar los textos
-        val nombre= etNombre.text.toString().trim()
-        val correo= etCorreo.text.toString().trim()
-        val password= etPassword.text.toString().trim()
+    private fun registrarUsuario() {
 
-        if (nombre.isEmpty() || correo.isEmpty() || password.isEmpty()){
-            Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show()
+        //Variables para guardar los textos
+        val nombre = etNombre.text.toString().trim()
+        val correo = etCorreo.text.toString().trim()
+        val password = etPassword.text.toString().trim()
+
+        //Validar que los campos no esten vacios
+        if (nombre.isEmpty() || correo.isEmpty() || password.isEmpty()) {
+
+            Toast.makeText(
+                this,
+                "Completa todos los campos",
+                Toast.LENGTH_SHORT
+            ).show()
+
             return
         }
 
         //Variable que guarda el resultado del registro y llama a la DB
-        val registro = dbHelper.registrarUsuario(nombre, correo, password)
+        val registro = dbHelper.registrarUsuario(
+            nombre,
+            correo,
+            password
+        )
 
-        //Validar que el resultado de la inserción sea verdadero o falso
-        if (registro){
+        //Validar que el resultado de la insercion sea verdadero o falso
+        if (registro) {
             //Si el registro es correcto
             Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
+
             //Cierra la pantalla actual y regresa a la pantalla anterior
             //Prueba de git
             finish()
-        }else{
+
+        } else {
             Toast.makeText(this, "Error al registrar", Toast.LENGTH_SHORT).show()
         }
 

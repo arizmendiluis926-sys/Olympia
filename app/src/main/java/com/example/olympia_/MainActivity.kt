@@ -2,11 +2,21 @@ package com.example.olympia_
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.olympia_.DatabaseHelper.DatabaseHelper
+
+private lateinit var etCorreo : EditText
+private lateinit var etPassword : EditText
+private lateinit var btnIngresar : Button
+
+private lateinit var dbHelper : DatabaseHelper
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,9 +26,54 @@ class MainActivity : AppCompatActivity() {
 
         val tvCrearCuenta = findViewById<TextView>(R.id.tvCrearCuenta)
 
+        etCorreo = findViewById(R.id.etCorreo)
+        etPassword = findViewById(R.id.etPass)
+        btnIngresar = findViewById(R.id.btnIngresar)
+
+        dbHelper = DatabaseHelper(this)
+
+        //Evento para iniciar secion
+        btnIngresar.setOnClickListener {
+            //llamar al metodo para iniciar sesion
+            iniciarSesion()
+        }
+
         tvCrearCuenta.setOnClickListener {
             val intent = Intent(this, RegistroActivity::class.java)
             startActivity(intent)
         }
+
     }
+
+    //Metodo para iniciar sesion
+    private fun iniciarSesion(){
+        val correo = etCorreo.text.toString().trim()
+        val pass = etPassword.text.toString().trim()
+
+        if(correo.isEmpty() || pass.isEmpty()){
+            Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        //Llamar al metodo de inicio de secion en la bd
+        val resultado = dbHelper.iniciarSesion(correo, pass)
+
+        //Validar si el inicio de sesion fue correcto
+        if(resultado){
+            //El resultado es verdadero
+            Toast.makeText(this, "Bienvenido", Toast.LENGTH_SHORT).show()
+
+            val intent = Intent(this, HomeActivity::class.java)
+            startActivity(intent)
+            finish()
+
+        }else{
+            //El resultado es falso
+            Toast.makeText(this, "Credenciales incorrectas", Toast.LENGTH_SHORT).show()
+        }
+
+
+
+    }
+
 }

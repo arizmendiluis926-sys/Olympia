@@ -71,9 +71,5 @@ class MainActivity : AppCompatActivity() {
             //El resultado es falso
             Toast.makeText(this, "Credenciales incorrectas", Toast.LENGTH_SHORT).show()
         }
-
-
-
     }
-
 }

@@ -1,5 +1,6 @@
 package com.example.olympia_
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -107,6 +108,28 @@ class HomeActivity : AppCompatActivity() {
                 .load(urlImagen)
                 .error(android.R.drawable.ic_menu_gallery)
                 .into(imgEjercicio)
+
+            // EVENTO
+            tarjeta.setOnClickListener {
+
+                // Necesitamos obtener el identificador del ejercicio
+                val slug = ejercicio.slug
+
+                // Validacion para saber que se cuenta con identificador
+                if (slug != null) {
+
+                    val intent = Intent(this@HomeActivity, DetailsActivity::class.java)
+
+                    // Enviar datos
+                    intent.putExtra("SLUG_EJERCICIO", slug)
+                    intent.putExtra("NOMBRE_EJERCICIO", ejercicio.name?.get("es"))
+                    intent.putExtra("GRUPO_EJERCICIO", ejercicio.group?.get("es"))
+                    intent.putExtra("EQUIPO_EJERCICIO", ejercicio.equipment?.get("es"))
+                    intent.putExtra("IMAGEN_EJERCICIO", urlImagen)
+
+                    startActivity(intent)
+                }
+            }
 
             contenedor.addView(tarjeta)
         }

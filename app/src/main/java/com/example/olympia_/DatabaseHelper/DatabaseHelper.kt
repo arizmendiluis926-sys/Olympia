@@ -1,4 +1,3 @@
-
 package com.example.olympia_.DatabaseHelper
 
 import android.content.ContentValues
@@ -19,7 +18,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
 
         //Informacion de la BD
         private const val DATABASE_NAME = "olympia.db"
-        private const val DATABASE_VERSION = 2
+        private const val DATABASE_VERSION = 3
 
         //Informacion de las tablas en la bd
         private const val TABLE_USUARIOS = "usuarios"
@@ -27,6 +26,27 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
         private const val COL_NOMBRE = "nombre"
         private const val COL_CORREO = "correo"
         private const val COL_PASSWORD = "password"
+
+        //Informacion de la tabla de favoritos
+        private const val TABLE_FAVORITOS = "favoritos"
+        private const val COL_ID_FAVORITO = "id"
+        private const val COL_SLUG = "slug"
+        private const val COL_NOMBRE_EJERCICIO = "nombre_ejercicio"
+        private const val COL_GRUPO = "grupo"
+        private const val COL_EQUIPO = "equipo"
+        private const val COL_IMAGEN = "imagen"
+
+        //Sentencia para crear la tabla de favoritos
+        private const val CREATE_TABLE_FAVORITOS = """
+            CREATE TABLE $TABLE_FAVORITOS (
+                $COL_ID_FAVORITO INTEGER PRIMARY KEY AUTOINCREMENT,
+                $COL_SLUG TEXT UNIQUE NOT NULL,
+                $COL_NOMBRE_EJERCICIO TEXT NOT NULL,
+                $COL_GRUPO TEXT,
+                $COL_EQUIPO TEXT,
+                $COL_IMAGEN TEXT
+            )
+        """
 
     }
 
@@ -46,6 +66,9 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
         //Crear tabla de usuarios
         db?.execSQL(crearTablaUsuarios)
 
+        //Crear tabla de favoritos
+        db?.execSQL(CREATE_TABLE_FAVORITOS)
+
     }
 
     //METODO ONUPGRADE
@@ -54,8 +77,10 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
         oldVersion: Int,
         newVersion: Int
     ) {
-        db?.execSQL("DROP TABLE IF EXISTS $TABLE_USUARIOS")
-        onCreate(db)
+        //Verificar la version de la BD para no borrar los datos existentes
+        if (oldVersion < 3) {
+            db?.execSQL(CREATE_TABLE_FAVORITOS)
+        }
     }
 
     //Metodo para registrar un usuario
@@ -107,6 +132,68 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
 
         return usuarioEncontrado
 
+    }
+
+    //Metodo para guardar un ejercicio en favoritos
+    fun guardarEjercicioFavorito(
+        slug: String,
+        nombre: String,
+        grupo: String,
+        equipo: String,
+        imagen: String
+    ): Boolean {
+
+        //Crear variable para escribir en la BD
+        val db = writableDatabase
+
+        //Valores que vienen de la API
+        val valores = ContentValues().apply {
+            put(COL_SLUG, slug)
+            put(COL_NOMBRE_EJERCICIO, nombre)
+            put(COL_GRUPO, grupo)
+            put(COL_EQUIPO, equipo)
+            put(COL_IMAGEN, imagen)
+        }
+
+        //Si el ejercicio ya existe, se ignora (slug es UNIQUE)
+        val resultado = db.insertWithOnConflict(
+            TABLE_FAVORITOS,
+            null,
+            valores,
+            SQLiteDatabase.CONFLICT_IGNORE
+        )
+
+        return resultado != -1L
+    }
+
+    //Metodo para eliminar un ejercicio de favoritos
+    fun eliminarEjercicioFavorito(slug: String): Boolean {
+
+        val db = writableDatabase
+
+        val filasAfectadas = db.delete(
+            TABLE_FAVORITOS,
+            "$COL_SLUG = ?",
+            arrayOf(slug)
+        )
+
+        return filasAfectadas > 0
+    }
+
+    //Metodo para verificar si un ejercicio ya esta en favoritos
+    fun existeEjercicioFavorito(slug: String): Boolean {
+
+        val db = readableDatabase
+
+        val cursor = db.rawQuery(
+            "SELECT $COL_SLUG FROM $TABLE_FAVORITOS WHERE $COL_SLUG = ?",
+            arrayOf(slug)
+        )
+
+        val existe = cursor.moveToFirst()
+        cursor.close()
+
+        return existe
     }
 
 }

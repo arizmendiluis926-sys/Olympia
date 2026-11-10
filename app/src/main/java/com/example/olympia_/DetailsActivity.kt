@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
+import com.example.olympia_.DatabaseHelper.DatabaseHelper
 import com.example.olympia_.model.ExerciseDetail
 import com.example.olympia_.network.RetrofitClient
 import com.google.android.material.chip.Chip
@@ -43,6 +44,7 @@ class DetailsActivity : AppCompatActivity() {
     private lateinit var cardAlternativas: View
     private lateinit var contenedorAlternativas: LinearLayout
 
+    private lateinit var db: DatabaseHelper
     private var ejercicioFavorito = false
 
     // Colores de la app
@@ -66,6 +68,7 @@ class DetailsActivity : AppCompatActivity() {
         tvGrupoDetalle = findViewById(R.id.tvGrupoDetalle)
         tvEquipoDetalle = findViewById(R.id.tvEquipoDetalle)
         btnFavorito = findViewById(R.id.btnFavorito)
+        db = DatabaseHelper(this)
 
         cardMusculos = findViewById(R.id.cardMusculos)
         tvTituloPrincipales = findViewById(R.id.tvTituloPrincipales)
@@ -101,22 +104,63 @@ class DetailsActivity : AppCompatActivity() {
             .error(android.R.drawable.ic_menu_gallery)
             .into(imgDetalle)
 
+        // Verificar si el ejercicio ya esta guardado como favorito
+        if (!slug.isNullOrEmpty()) {
+            ejercicioFavorito = db.existeEjercicioFavorito(slug)
+        }
+        actualizarIconoFavorito()
+
         // Evento del boton de favorito
         btnFavorito.setOnClickListener {
 
-            ejercicioFavorito = !ejercicioFavorito
+            // Sin slug no se puede identificar el ejercicio en la BD
+            if (slug.isNullOrEmpty()) {
+                Toast.makeText(this, "No se pudo identificar el ejercicio", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val nombreEjercicio = nombre ?: "Sin nombre"
 
             if (ejercicioFavorito) {
-                btnFavorito.setImageResource(R.drawable.favorito)
-                Toast.makeText(this, "Ejercicio ${nombre ?: "Sin nombre"} agregado a favoritos", Toast.LENGTH_SHORT).show()
+                // Eliminar de la base de datos
+                val eliminado = db.eliminarEjercicioFavorito(slug)
+
+                if (eliminado) {
+                    ejercicioFavorito = false
+                    actualizarIconoFavorito()
+                    Toast.makeText(this, "Ejercicio $nombreEjercicio eliminado de favoritos", Toast.LENGTH_SHORT).show()
+                }
             } else {
-                btnFavorito.setImageResource(R.drawable.no_favorito)
-                Toast.makeText(this, "Ejercicio ${nombre ?: "Sin nombre"} eliminado de favoritos", Toast.LENGTH_SHORT).show()
+                // Guardar en la base de datos
+                val guardado = db.guardarEjercicioFavorito(
+                    slug = slug,
+                    nombre = nombreEjercicio,
+                    grupo = grupo ?: "",
+                    equipo = equipo ?: "",
+                    imagen = imagen ?: ""
+                )
+
+                if (guardado) {
+                    ejercicioFavorito = true
+                    actualizarIconoFavorito()
+                    Toast.makeText(this, "Ejercicio $nombreEjercicio agregado a favoritos", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Ejercicio $nombreEjercicio ya se encuentra en favoritos", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
         // Pedir a la API musculos, instrucciones, errores y alternativas
         cargarDetalle(slug)
+    }
+
+    // Metodo para cambiar el icono segun el estado de favorito
+    private fun actualizarIconoFavorito() {
+        if (ejercicioFavorito) {
+            btnFavorito.setImageResource(R.drawable.favorito)
+        } else {
+            btnFavorito.setImageResource(R.drawable.no_favorito)
+        }
     }
 
     // Metodo para obtener el detalle completo del ejercicio

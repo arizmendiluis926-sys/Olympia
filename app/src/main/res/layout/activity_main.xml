@@ -102,6 +102,16 @@
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"/>
 
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnGoogle"
+                android:layout_width="match_parent"
+                android:layout_height="55dp"
+                android:text="@string/btn_google_signin"
+                android:background="@drawable/bg_btn_google"
+                android:layout_marginTop="15dp"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"/>
+
             <TextView
                 android:id="@+id/tvCrearCuenta"
                 android:layout_width="wrap_content"
@@ -110,8 +120,8 @@
                 android:textSize="13sp"
                 android:textStyle="bold"
                 android:textColor="#1CBD27"
-                android:layout_marginTop="30dp"
-                android:layout_marginBottom="60dp"/>
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="40dp"/>
 
         </LinearLayout>
 

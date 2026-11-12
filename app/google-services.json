@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "871355138870",
+    "project_id": "olympia-aac42",
+    "storage_bucket": "olympia-aac42.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:871355138870:android:e2716135712f4fe95aa997",
+        "android_client_info": {
+          "package_name": "com.example.olympia_"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPjKvSQVhw-EH9Eh6D6RaebvYre_1JTTk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

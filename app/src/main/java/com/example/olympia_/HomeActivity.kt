@@ -17,11 +17,15 @@ import com.example.olympia_.model.ExercisesResponse
 import com.example.olympia_.network.RetrofitClient
 import retrofit2.Call
 import retrofit2.Callback
+import android.widget.Button
+import com.google.firebase.auth.FirebaseAuth
 import retrofit2.Response
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var tvResultado: TextView
+    private lateinit var tvUsuario: TextView
+    private lateinit var btnCerrarSesion: Button
     private lateinit var contenedorPiernas: LinearLayout
     private lateinit var contenedorPecho: LinearLayout
     private lateinit var contenedorEspalda: LinearLayout
@@ -41,9 +45,29 @@ class HomeActivity : AppCompatActivity() {
         }
 
         tvResultado = findViewById(R.id.tvResultado)
+        tvUsuario = findViewById(R.id.tvUsuario)
+        btnCerrarSesion = findViewById(R.id.btnCerrarSesion)
         contenedorPiernas = findViewById(R.id.contenedorPiernas)
         contenedorPecho = findViewById(R.id.contenedorPecho)
         contenedorEspalda = findViewById(R.id.contenedorEspalda)
+
+        // Configurar usuario de Firebase
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val nombre = currentUser.displayName ?: currentUser.email ?: "Usuario"
+            tvUsuario.text = "¡Hola, $nombre!"
+        } else {
+            tvUsuario.text = "¡Hola!"
+        }
+
+        // Evento cerrar sesión
+        btnCerrarSesion.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            Toast.makeText(this, "Sesión cerrada", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         // Un llamado a la API por cada grupo muscular
         obtenerEjercicios("legs", contenedorPiernas)

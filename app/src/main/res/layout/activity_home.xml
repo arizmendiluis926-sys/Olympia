@@ -22,6 +22,35 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- HEADER CON USUARIO Y BOTÓN CERRAR SESIÓN -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="15dp"
+                android:paddingBottom="10dp">
+
+                <TextView
+                    android:id="@+id/tvUsuario"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="¡Hola!"
+                    android:textColor="#25B82B"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnCerrarSesion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:text="Cerrar sesión"
+                    android:textSize="12sp"
+                    android:backgroundTint="#DB4437"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
             <!-- ESTADO DE CARGA DE LA API -->
             <TextView
                 android:id="@+id/tvResultado"

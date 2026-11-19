@@ -43,8 +43,7 @@ dependencies {
     implementation(libs.material)
 
     // Firebase BoM y Authentication
-    implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
-    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-auth:24.0.1")
 
     // Inicio de sesión con Google (Credential Manager)
     implementation("androidx.credentials:credentials:1.5.0")

@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.example.olympia_.model.Favorito
 
 //Crear clase DatabaseHelper que hereda la clase SQLite
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(
@@ -194,6 +195,45 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
         cursor.close()
 
         return existe
+    }
+
+    // Metodo para consultar todos los ejercicios favoritos
+    fun obtenerEjerciciosFavoritos(): List<Favorito> {
+
+        val lista = mutableListOf<Favorito>()
+        val db = readableDatabase
+
+        val consulta = """
+            SELECT
+                $COL_SLUG,
+                $COL_NOMBRE_EJERCICIO,
+                $COL_GRUPO,
+                $COL_EQUIPO,
+                $COL_IMAGEN
+            FROM $TABLE_FAVORITOS
+            ORDER BY $COL_ID_FAVORITO DESC
+        """.trimIndent()
+
+        val cursor = db.rawQuery(consulta, null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                val favorito = Favorito(
+                    slug = cursor.getString(0),
+                    nombre = cursor.getString(1),
+                    grupo = cursor.getString(2) ?: "",
+                    equipo = cursor.getString(3) ?: "",
+                    imagen = cursor.getString(4) ?: ""
+                )
+
+                lista.add(favorito)
+
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+
+        return lista
     }
 
 }

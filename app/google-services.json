@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "871355138870",
-    "project_id": "olympia-aac42",
-    "storage_bucket": "olympia-aac42.firebasestorage.app"
+    "project_number": "996527141632",
+    "project_id": "olympia-338d5",
+    "storage_bucket": "olympia-338d5.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:871355138870:android:e2716135712f4fe95aa997",
+        "mobilesdk_app_id": "1:996527141632:android:74db8c3812f649d89b79e5",
         "android_client_info": {
           "package_name": "com.example.olympia_"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "996527141632-2addacvfjtg2m2743adk66tcbcl868qu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.olympia_",
+            "certificate_hash": "f0986b4943509e259cb3de745b307be1000f0709"
+          }
+        },
+        {
+          "client_id": "996527141632-f2aaisrh11osu8mi12kpf6me0fe043no.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBPjKvSQVhw-EH9Eh6D6RaebvYre_1JTTk"
+          "current_key": "AIzaSyD0t_xGtTMTHHchih6O0_rUjKA15PdFzLA"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "996527141632-f2aaisrh11osu8mi12kpf6me0fe043no.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

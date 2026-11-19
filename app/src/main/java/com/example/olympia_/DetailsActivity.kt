@@ -1,7 +1,12 @@
 package com.example.olympia_
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
@@ -11,6 +16,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
@@ -24,6 +32,12 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class DetailsActivity : AppCompatActivity() {
+
+    companion object{
+        private const val CANAL_ID = "canal_general"
+        private const val NOTIFICACION_ID = 1
+        private const val CODIGO_PERMISO = 100
+    }
 
     private lateinit var imgDetalle: ImageView
     private lateinit var tvNombreDetalle: TextView
@@ -265,4 +279,52 @@ class DetailsActivity : AppCompatActivity() {
 
         tarjeta.visibility = View.VISIBLE
     }
+
+    //Metodo para crear canal de notificaciones
+    private fun crearCanalNoti(){
+
+        //Evaluar el permiso del usuario para manejar notificaciones
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+
+            val canal = NotificationChannel(
+                CANAL_ID,
+                "Notoficaciones generales",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+
+            canal.description = "Canal de envio de notificaciones sobre la BD"
+
+            val adminNotificaciones = getSystemService(NotificationManager::class.java)
+
+            adminNotificaciones.createNotificationChannel(canal)
+
+        }
+
+    }
+
+    //METODO PARA MOSTRAR LA NOTIFICACION
+    private fun mostrarNoti(){
+
+        //Verificar los permisos por el usuario
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ContextCompat.checkSelfPermission(
+            this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ){
+
+            //VOLVER A PEDIR PERMISO
+            ActivityCompat.requestPermissions(this,arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),CODIGO_PERMISO)
+            Toast.makeText(this, "Autoriza el envio de notificaciones", Toast.LENGTH_SHORT).show()
+
+            return
+        }
+
+        val notificacion = NotificationCompat.Builder(this, CANAL_ID)
+            .setSmallIcon(R.drawable.favorito)
+            .setContentTitle("Music-App")
+            .setContentText("Un album fue añadido a la base de datos")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .build()
+
+    }
+
 }

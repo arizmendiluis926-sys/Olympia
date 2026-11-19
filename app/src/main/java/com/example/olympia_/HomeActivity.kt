@@ -1,3 +1,4 @@
+
 package com.example.olympia_
 
 import android.content.Intent
@@ -11,26 +12,34 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.olympia_.model.ExerciseItem
 import com.example.olympia_.model.ExercisesResponse
 import com.example.olympia_.network.RetrofitClient
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
-import android.widget.Button
-import com.google.firebase.auth.FirebaseAuth
 import retrofit2.Response
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var tvResultado: TextView
     private lateinit var tvUsuario: TextView
-    private lateinit var btnCerrarSesion: Button
+
     private lateinit var contenedorPiernas: LinearLayout
     private lateinit var contenedorPecho: LinearLayout
     private lateinit var contenedorEspalda: LinearLayout
 
-    // Maximo de tarjetas por seccion (la API no trae parametro de limite)
+    private lateinit var bottomNavigation: BottomNavigationView
+    private lateinit var auth: FirebaseAuth
+    private lateinit var credentialManager: CredentialManager
+
+    // Máximo de tarjetas por sección
     private val limiteResultados = 10
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,43 +49,116 @@ class HomeActivity : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(
+                systemBars.left,
+                systemBars.top,
+                systemBars.right,
+                systemBars.bottom
+            )
             insets
         }
 
+        // Inicializar componentes
         tvResultado = findViewById(R.id.tvResultado)
         tvUsuario = findViewById(R.id.tvUsuario)
-        btnCerrarSesion = findViewById(R.id.btnCerrarSesion)
+
         contenedorPiernas = findViewById(R.id.contenedorPiernas)
         contenedorPecho = findViewById(R.id.contenedorPecho)
         contenedorEspalda = findViewById(R.id.contenedorEspalda)
 
-        // Configurar usuario de Firebase
-        val currentUser = FirebaseAuth.getInstance().currentUser
+        bottomNavigation = findViewById(R.id.bottomNavigation)
+
+        auth = FirebaseAuth.getInstance()
+        credentialManager = CredentialManager.create(this)
+
+        // Mostrar usuario
+        val currentUser = auth.currentUser
+
         if (currentUser != null) {
-            val nombre = currentUser.displayName ?: currentUser.email ?: "Usuario"
+            val nombre = currentUser.displayName
+                ?: currentUser.email
+                ?: "Usuario"
+
             tvUsuario.text = "¡Hola, $nombre!"
         } else {
             tvUsuario.text = "¡Hola!"
         }
 
-        // Evento cerrar sesión
-        btnCerrarSesion.setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
-            Toast.makeText(this, "Sesión cerrada", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
+        // Configurar menú inferior
+        menuNavegacion()
 
-        // Un llamado a la API por cada grupo muscular
+        // Consultar ejercicios en la API
         obtenerEjercicios("legs", contenedorPiernas)
         obtenerEjercicios("chest", contenedorPecho)
         obtenerEjercicios("back", contenedorEspalda)
     }
 
-    // Metodo para obtener los ejercicios de un grupo muscular
-    private fun obtenerEjercicios(grupo: String, contenedor: LinearLayout) {
+    // MENÚ DE NAVEGACIÓN
+    private fun menuNavegacion() {
+
+        bottomNavigation.selectedItemId = R.id.nav_inicio
+
+        bottomNavigation.setOnItemSelectedListener { item ->
+
+            when (item.itemId) {
+
+                R.id.nav_inicio -> {
+                    true
+                }
+
+                R.id.nav_favoritos -> {
+                    val intent = Intent(this, FavoritesActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
+
+                R.id.nav_salir -> {
+                    cerrarSesion()
+                    true
+                }
+
+                else -> false
+            }
+        }
+    }
+
+    // CERRAR SESIÓN
+    private fun cerrarSesion() {
+
+        auth.signOut()
+
+        lifecycleScope.launch {
+
+            try {
+                credentialManager.clearCredentialState(
+                    ClearCredentialStateRequest()
+                )
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@HomeActivity,
+                    "Error al cerrar sesión",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            val intent = Intent(
+                this@HomeActivity,
+                MainActivity::class.java
+            )
+
+            intent.flags =
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+            startActivity(intent)
+        }
+    }
+
+    // OBTENER EJERCICIOS DE LA API
+    private fun obtenerEjercicios(
+        grupo: String,
+        contenedor: LinearLayout
+    ) {
 
         RetrofitClient.instance.fetchExercisesByGroup(grupo)
             .enqueue(object : Callback<ExercisesResponse> {
@@ -85,14 +167,23 @@ class HomeActivity : AppCompatActivity() {
                     call: Call<ExercisesResponse>,
                     response: Response<ExercisesResponse>
                 ) {
-                    val ejercicios = response.body()?.exercises ?: emptyList()
+
+                    val ejercicios =
+                        response.body()?.exercises ?: emptyList()
 
                     if (response.isSuccessful && ejercicios.isNotEmpty()) {
+
                         tvResultado.visibility = View.GONE
-                        // Limitar a 10 resultados
-                        mostrarEjercicios(ejercicios.take(limiteResultados), contenedor)
+
+                        mostrarEjercicios(
+                            ejercicios.take(limiteResultados),
+                            contenedor
+                        )
+
                     } else {
+
                         tvResultado.text = "Ejercicios no encontrados"
+
                         Toast.makeText(
                             this@HomeActivity,
                             "Ejercicios no encontrados ($grupo)",
@@ -101,54 +192,90 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
 
-                override fun onFailure(call: Call<ExercisesResponse>, t: Throwable) {
+                override fun onFailure(
+                    call: Call<ExercisesResponse>,
+                    t: Throwable
+                ) {
+
                     tvResultado.text = "Error en la API"
-                    Toast.makeText(this@HomeActivity, "Error en la API", Toast.LENGTH_SHORT).show()
+
+                    Toast.makeText(
+                        this@HomeActivity,
+                        "Error en la API",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             })
     }
 
-    // Metodo para mostrar las tarjetas de ejercicios
-    private fun mostrarEjercicios(ejercicios: List<ExerciseItem>, contenedor: LinearLayout) {
+    // MOSTRAR TARJETAS DE EJERCICIOS
+    private fun mostrarEjercicios(
+        ejercicios: List<ExerciseItem>,
+        contenedor: LinearLayout
+    ) {
 
-        // Evitar tarjetas duplicadas
         contenedor.removeAllViews()
 
         for (ejercicio in ejercicios) {
 
-            val tarjeta = layoutInflater.inflate(R.layout.item_exercise, contenedor, false)
+            val tarjeta = layoutInflater.inflate(
+                R.layout.item_exercise,
+                contenedor,
+                false
+            )
 
-            val imgEjercicio = tarjeta.findViewById<ImageView>(R.id.imgEjercicio)
-            val tvNombre = tarjeta.findViewById<TextView>(R.id.tvNombreEjercicio)
-            val tvEquipamiento = tarjeta.findViewById<TextView>(R.id.tvEquipamiento)
+            val imgEjercicio = tarjeta.findViewById<ImageView>(
+                R.id.imgEjercicio
+            )
+
+            val tvNombre = tarjeta.findViewById<TextView>(
+                R.id.tvNombreEjercicio
+            )
+
+            val tvEquipamiento = tarjeta.findViewById<TextView>(
+                R.id.tvEquipamiento
+            )
 
             tvNombre.text = ejercicio.name?.get("es") ?: "Sin nombre"
-            tvEquipamiento.text = ejercicio.equipment?.get("es") ?: "Sin equipo"
 
-            // Imagen (ilustracion masculina; si no existe, la femenina)
-            val urlImagen = ejercicio.image?.get("male") ?: ejercicio.image?.get("female")
+            tvEquipamiento.text =
+                ejercicio.equipment?.get("es") ?: "Sin equipo"
+
+            // Cargar imagen
+            val urlImagen =
+                ejercicio.image?.get("male")
+                    ?: ejercicio.image?.get("female")
 
             Glide.with(this@HomeActivity)
                 .load(urlImagen)
                 .error(android.R.drawable.ic_menu_gallery)
                 .into(imgEjercicio)
 
-            // EVENTO
+            // Abrir detalles del ejercicio
             tarjeta.setOnClickListener {
 
-                // Necesitamos obtener el identificador del ejercicio
                 val slug = ejercicio.slug
 
-                // Validacion para saber que se cuenta con identificador
                 if (slug != null) {
 
-                    val intent = Intent(this@HomeActivity, DetailsActivity::class.java)
+                    val intent = Intent(
+                        this@HomeActivity,
+                        DetailsActivity::class.java
+                    )
 
-                    // Enviar datos
                     intent.putExtra("SLUG_EJERCICIO", slug)
-                    intent.putExtra("NOMBRE_EJERCICIO", ejercicio.name?.get("es"))
-                    intent.putExtra("GRUPO_EJERCICIO", ejercicio.group?.get("es"))
-                    intent.putExtra("EQUIPO_EJERCICIO", ejercicio.equipment?.get("es"))
+                    intent.putExtra(
+                        "NOMBRE_EJERCICIO",
+                        ejercicio.name?.get("es")
+                    )
+                    intent.putExtra(
+                        "GRUPO_EJERCICIO",
+                        ejercicio.group?.get("es")
+                    )
+                    intent.putExtra(
+                        "EQUIPO_EJERCICIO",
+                        ejercicio.equipment?.get("es")
+                    )
                     intent.putExtra("IMAGEN_EJERCICIO", urlImagen)
 
                     startActivity(intent)

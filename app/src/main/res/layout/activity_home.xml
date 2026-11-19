@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -8,21 +9,24 @@
     android:background="#101818"
     tools:context=".HomeActivity">
 
+    <!-- CONTENIDO PRINCIPAL -->
     <ScrollView
+        android:id="@+id/scrollHome"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:paddingVertical="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- HEADER CON USUARIO Y BOTÓN CERRAR SESIÓN -->
+            <!-- ENCABEZADO -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -33,25 +37,16 @@
 
                 <TextView
                     android:id="@+id/tvUsuario"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:text="¡Hola!"
                     android:textColor="#25B82B"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
-                <Button
-                    android:id="@+id/btnCerrarSesion"
-                    android:layout_width="wrap_content"
-                    android:layout_height="38dp"
-                    android:text="Cerrar sesión"
-                    android:textSize="12sp"
-                    android:backgroundTint="#DB4437"
-                    android:textColor="@color/white" />
             </LinearLayout>
 
-            <!-- ESTADO DE CARGA DE LA API -->
+            <!-- ESTADO DE LA API -->
             <TextView
                 android:id="@+id/tvResultado"
                 android:layout_width="wrap_content"
@@ -61,7 +56,7 @@
                 android:textColor="@color/white"
                 android:textSize="15sp" />
 
-            <!-- TÍTULO DE LA SECCIÓN -->
+            <!-- SECCIÓN PIERNAS -->
             <TextView
                 android:id="@+id/tvTituloPiernas"
                 android:layout_width="match_parent"
@@ -73,7 +68,6 @@
                 android:textSize="25sp"
                 android:textStyle="bold" />
 
-            <!-- SCROLL HORIZONTAL DE TARJETAS -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -88,9 +82,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal" />
+
             </HorizontalScrollView>
 
-            <!-- TÍTULO DE LA SECCIÓN -->
+            <!-- SECCIÓN PECHO -->
             <TextView
                 android:id="@+id/tvTituloPecho"
                 android:layout_width="match_parent"
@@ -102,7 +97,6 @@
                 android:textSize="25sp"
                 android:textStyle="bold" />
 
-            <!-- SCROLL HORIZONTAL DE TARJETAS -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -117,9 +111,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal" />
+
             </HorizontalScrollView>
 
-            <!-- TÍTULO DE LA SECCIÓN -->
+            <!-- SECCIÓN ESPALDA -->
             <TextView
                 android:id="@+id/tvTituloEspalda"
                 android:layout_width="match_parent"
@@ -131,7 +126,6 @@
                 android:textSize="25sp"
                 android:textStyle="bold" />
 
-            <!-- SCROLL HORIZONTAL DE TARJETAS -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -146,9 +140,25 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal" />
+
             </HorizontalScrollView>
 
         </LinearLayout>
+
     </ScrollView>
+
+    <!-- MENÚ DE NAVEGACIÓN INFERIOR -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#182323"
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/menu_bottom"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

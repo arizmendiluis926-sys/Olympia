@@ -164,4 +164,19 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
         finish()
     }
+
+    override fun onStart() {
+        super.onStart()
+
+        //Variables que guarda el estado del usuario actual
+        val usuarioActual= auth.currentUser
+
+        //Validar que la informacion del usuario este activa
+        if(usuarioActual != null){
+            val intent = Intent(this, HomeActivity::class.java)
+
+            startActivity(intent)
+            finish()
+        }
+    }
 }

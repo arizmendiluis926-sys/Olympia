@@ -2,7 +2,9 @@ package com.example.olympia_
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -18,6 +20,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -36,6 +39,8 @@ class DetailsActivity : AppCompatActivity() {
     companion object{
         private const val CANAL_ID = "canal_general"
         private const val NOTIFICACION_ID = 1
+        private const val CANAL_ALERTA_ID = "canal_alertas"
+        private const val NOTIFICACION_ALERTA_ID = 2
         private const val CODIGO_PERMISO = 100
     }
 
@@ -98,6 +103,9 @@ class DetailsActivity : AppCompatActivity() {
         contenedorAlternativas = findViewById(R.id.contenedorAlternativas)
 
         mostrarInformacionEjercicio()
+
+        crearCanalNoti()
+
     }
 
     // Metodo para mostrar la informacion de un ejercicio
@@ -143,6 +151,7 @@ class DetailsActivity : AppCompatActivity() {
                     ejercicioFavorito = false
                     actualizarIconoFavorito()
                     Toast.makeText(this, "Ejercicio $nombreEjercicio eliminado de favoritos", Toast.LENGTH_SHORT).show()
+                    mostrarNotiEliminado(nombreEjercicio)
                 }
             } else {
                 // Guardar en la base de datos
@@ -158,6 +167,7 @@ class DetailsActivity : AppCompatActivity() {
                     ejercicioFavorito = true
                     actualizarIconoFavorito()
                     Toast.makeText(this, "Ejercicio $nombreEjercicio agregado a favoritos", Toast.LENGTH_SHORT).show()
+                    mostrarNoti()
                 } else {
                     Toast.makeText(this, "Ejercicio $nombreEjercicio ya se encuentra en favoritos", Toast.LENGTH_SHORT).show()
                 }
@@ -280,35 +290,46 @@ class DetailsActivity : AppCompatActivity() {
         tarjeta.visibility = View.VISIBLE
     }
 
-    //Metodo para crear canal de notificaciones
+    //Metodo para crear los canales de notificaciones
     private fun crearCanalNoti(){
 
-        //Evaluar el permiso del usuario para manejar notificaciones
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-
-            val canal = NotificationChannel(
-                CANAL_ID,
-                "Notoficaciones generales",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-
-            canal.description = "Canal de envio de notificaciones sobre la BD"
 
             val adminNotificaciones = getSystemService(NotificationManager::class.java)
 
+            // Canal 1: notificaciones generales
+            val canal = NotificationChannel(
+                CANAL_ID,
+                "Notificaciones generales",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            canal.description = "Canal de envio de notificaciones sobre la BD"
             adminNotificaciones.createNotificationChannel(canal)
 
+            // Canal 2: alertas con prioridad alta, vibracion y luz
+            val canalAlerta = NotificationChannel(
+                CANAL_ALERTA_ID,
+                "Alertas de favoritos",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Avisos cuando eliminas ejercicios de tus favoritos"
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 300, 150, 300)
+                enableLights(true)
+                lightColor = Color.RED
+            }
+            adminNotificaciones.createNotificationChannel(canalAlerta)
         }
 
     }
 
-    //METODO PARA MOSTRAR LA NOTIFICACION
+    //METODO PARA MOSTRAR LA NOTIFICACION 1 (ejercicio agregado)
     private fun mostrarNoti(){
 
         //Verificar los permisos por el usuario
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ContextCompat.checkSelfPermission(
-            this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-            ){
+                this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ){
 
             //VOLVER A PEDIR PERMISO
             ActivityCompat.requestPermissions(this,arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),CODIGO_PERMISO)
@@ -318,12 +339,69 @@ class DetailsActivity : AppCompatActivity() {
         }
 
         val notificacion = NotificationCompat.Builder(this, CANAL_ID)
-            .setSmallIcon(R.drawable.favorito)
-            .setContentTitle("Music-App")
-            .setContentText("Un album fue añadido a la base de datos")
+            .setSmallIcon(R.drawable.olympia_logo)
+            .setContentTitle("Olympia_")
+            .setContentText("Un ejercicio fue añadido a la base de datos")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .build()
+
+        NotificationManagerCompat
+            .from(this)
+            .notify(
+                NOTIFICACION_ID,
+                notificacion
+            )
+
+    }
+
+    //METODO PARA MOSTRAR LA NOTIFICACION 2
+    private fun mostrarNotiEliminado(nombre: String){
+
+        //Verificar los permisos por el usuario
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ){
+
+            ActivityCompat.requestPermissions(this,arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),CODIGO_PERMISO)
+            Toast.makeText(this, "Autoriza el envio de notificaciones", Toast.LENGTH_SHORT).show()
+
+            return
+        }
+
+        val intentFavoritos = Intent(this, FavoritesActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intentFavoritos,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notificacion = NotificationCompat.Builder(this, CANAL_ALERTA_ID)
+            .setSmallIcon(R.drawable.olympia_logo)
+            .setContentTitle("Favorito eliminado")
+            .setContentText("Quitaste $nombre de tus favoritos")
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText("Quitaste \"$nombre\" de tus favoritos. Puedes volver a agregarlo cuando quieras desde el detalle del ejercicio.")
+            )
+            .setColor(Color.parseColor("#D32F2F"))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setContentIntent(pendingIntent)
+            .addAction(R.drawable.favorito, "Ver favoritos", pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        NotificationManagerCompat
+            .from(this)
+            .notify(
+                NOTIFICACION_ALERTA_ID,
+                notificacion
+            )
 
     }
 
